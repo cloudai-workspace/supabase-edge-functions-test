@@ -1,4 +1,5 @@
 // supabase/functions/hello/index.ts
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // CORS headers for all responses
 const corsHeaders = {
@@ -7,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
 };
 
-Deno.serve((req: Request) => {
+Deno.serve(async (req: Request) => {
   console.log(`Request method: ${req.method}`);
   console.log(`Request URL: ${req.url}`);
   
@@ -20,23 +21,45 @@ Deno.serve((req: Request) => {
   }
 
   try {
-    // Get auth header - ถ้าไม่มีก็ใช้ anonymous
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? 'https://fetyrgtzfeqcudmgbixi.supabase.co'
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldHlyZ3R6ZmVxY3VkbWdiaXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NzkyOTcsImV4cCI6MjA3NDA1NTI5N30.Cvf69n4ZnGIzwtmcqC02seRW2dhg0l4yksXxiHHxKBA'
+    
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Get posts from database
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Database error:', error)
+      throw error
+    }
+
+    // Get auth header
     const authHeader = req.headers.get('Authorization');
     const apikey = req.headers.get('apikey');
     
     console.log('Auth header:', authHeader ? 'Present' : 'Not present');
     console.log('API key header:', apikey ? 'Present' : 'Not present');
+    console.log('Posts fetched:', posts?.length || 0);
 
-    // Response data - ทำงานได้แม้ไม่มี auth
+    // Response data with database content
     const responseData = {
-      message: "Hello from Supabase Edge Functions! 🚀 (Public Access Working)",
+      message: "Hello from Supabase Edge Functions! 🚀 (Connected to Database)",
       timestamp: new Date().toISOString(),
       method: req.method,
       url: req.url,
       userAgent: req.headers.get('user-agent') || 'Unknown',
       status: 'online',
       authStatus: authHeader ? 'authenticated' : 'anonymous',
-      publicAccess: true,
+      database: {
+        connected: true,
+        postsCount: posts?.length || 0,
+        posts: posts || []
+      },
       deployment: 'production'
     };
 
@@ -57,7 +80,11 @@ Deno.serve((req: Request) => {
     const errorResponse = {
       error: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString(),
-      status: 'error'
+      status: 'error',
+      database: {
+        connected: false,
+        error: error instanceof Error ? error.message : 'Unknown database error'
+      }
     };
 
     return new Response(
