@@ -17,11 +17,6 @@
       "dest": "/test-function.html"
     }
   ],
-  "functions": {
-    "test-function.html": {
-      "includeFiles": "test-function.html"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
