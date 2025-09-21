@@ -1,0 +1,70 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Supabase Function (Deno)",
+			"type": "shell",
+			"command": "C:\\Users\\Watchara\\.deno\\bin\\deno.exe",
+			"args": [
+				"run",
+				"--allow-net",
+				"--allow-env",
+				"index.ts"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}/supabase/functions/hello"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
+			"label": "Stop Supabase Function",
+			"type": "shell",
+			"command": "echo",
+			"args": ["Function stopped - close the terminal manually"],
+			"group": "build"
+		},
+		{
+			"label": "Deploy Supabase Function",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"supabase",
+				"functions",
+				"deploy",
+				"hello"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Test Local Function",
+			"type": "shell",
+			"command": "curl",
+			"args": [
+				"http://localhost:8000"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "shared"
+			}
+		}
+	]
+}

@@ -148,7 +148,11 @@
         <p>หลังจาก deploy ไป Supabase แล้ว ใส่ URL ของ function ที่นี่:</p>
         <div class="input-group">
             <label for="functionUrl">Supabase Function URL:</label>
-            <input type="text" id="functionUrl" placeholder="https://your-project.supabase.co/functions/v1/hello">
+            <input type="text" id="functionUrl" value="https://fetyrgtzfeqcudmgbixi.supabase.co/functions/v1/hello">
+        </div>
+        <div class="input-group">
+            <label for="apiKey">API Key (optional for testing):</label>
+            <input type="password" id="apiKey" placeholder="eyJhbGciOiJIUzI1NiIs...">
         </div>
         <button onclick="testProduction()">☁️ Test Production Function</button>
         
@@ -199,6 +203,8 @@
         // Test production function
         async function testProduction() {
             const url = document.getElementById('functionUrl').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
             if (!url) {
                 alert('❌ กรุณาใส่ URL ของ function');
                 return;
@@ -211,11 +217,18 @@
             
             showLoading();
             try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add authorization header if API key provided
+                if (apiKey) {
+                    headers['Authorization'] = `Bearer ${apiKey}`;
+                }
+                
                 const response = await fetch(url, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: headers
                 });
                 
                 const data = await response.json();
@@ -224,10 +237,11 @@
                     statusText: response.statusText,
                     data: data,
                     url: url,
-                    type: 'Production'
+                    type: 'Production',
+                    authenticated: !!apiKey
                 });
             } catch (error) {
-                showError('Error: ' + error.message + '\n\nตรวจสอบ:\n1. URL ถูกต้องหรือไม่\n2. Function deploy แล้วหรือยัง\n3. Network connection');
+                showError('Error: ' + error.message + '\n\nตรวจสอบ:\n1. URL ถูกต้องหรือไม่\n2. Function deploy แล้วหรือยัง\n3. Network connection\n4. API Key (ถ้าจำเป็น)');
             }
         }
         
@@ -254,6 +268,7 @@
                 <p><strong>เวลาทดสอบ:</strong> ${timestamp}</p>
                 <p><strong>URL:</strong> ${data.url}</p>
                 <p><strong>Status:</strong> ${data.status} ${data.statusText}</p>
+                <p><strong>Authentication:</strong> ${data.authenticated ? '🔐 With API Key' : '🔓 Public Access'}</p>
                 <p><strong>Response:</strong></p>
                 <pre>${JSON.stringify(data.data, null, 2)}</pre>
             `;

@@ -1,0 +1,83 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "deno.enable": true,
+    "deno.lint": true,
+    "deno.unstable": [],
+    "typescript.suggest.completeFunctionCalls": true,
+    "typescript.suggest.names": true,
+    "typescript.suggest.paths": true,
+    "typescript.suggest.autoImports": false,
+    "typescript.validate.enable": false,
+    "[typescript]": {
+      "editor.defaultFormatter": "denoland.vscode-deno"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "denoland.vscode-deno"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "files.associations": {
+      "*.ts": "typescript"
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "supabase.projectRef": "",
+    "supabase.apiUrl": "",
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "explorer.confirmDelete": false,
+    "workbench.startupEditor": "readme"
+  },
+  "extensions": {
+    "recommendations": [
+      "supabase.vscode-supabase-extension",
+      "denoland.vscode-deno",
+      "esbenp.prettier-vscode",
+      "github.copilot",
+      "github.copilot-chat",
+      "ms-vscode.vscode-json"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "🚀 Start Local Function",
+        "type": "shell",
+        "command": "C:\\Users\\Watchara\\.deno\\bin\\deno.exe",
+        "args": ["run", "--allow-net", "--allow-env", "index.ts"],
+        "options": {
+          "cwd": "${workspaceFolder}/supabase/functions/hello"
+        },
+        "group": "build",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new"
+        },
+        "problemMatcher": []
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": []
+  }
+}
