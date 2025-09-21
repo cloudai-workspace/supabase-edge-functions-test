@@ -11,6 +11,34 @@
     {
       "src": "/",
       "dest": "/test-function.html"
+    },
+    {
+      "src": "/test",
+      "dest": "/test-function.html"
+    }
+  ],
+  "functions": {
+    "test-function.html": {
+      "includeFiles": "test-function.html"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
   ]
 }
