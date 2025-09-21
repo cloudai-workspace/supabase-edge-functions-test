@@ -1,0 +1,34 @@
+{
+  "name": "supabase-edge-functions-test",
+  "version": "1.0.0",
+  "description": "โปรเจกต์ทดสอบ Supabase Edge Functions แบบง่ายๆ",
+  "main": "index.js",
+  "scripts": {
+    "dev": "supabase functions serve",
+    "deploy": "supabase functions deploy hello",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "supabase",
+    "edge-functions",
+    "deno",
+    "typescript",
+    "vercel"
+  ],
+  "author": "Watchara",
+  "license": "MIT",
+  "devDependencies": {
+    "supabase": "^2.40.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/supabase-edge-functions-test.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/supabase-edge-functions-test/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/supabase-edge-functions-test#readme"
+}
