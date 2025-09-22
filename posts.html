@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Posts – Table View</title>
+  <style>
+    :root { --bg:#f7fafc; --card:#fff; --fg:#2d3748; --muted:#4a5568; --border:#e2e8f0; --border2:#edf2f7; }
+    body{font-family:Segoe UI,system-ui,-apple-system,Arial,sans-serif;background:var(--bg);margin:0;padding:24px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);padding:20px;max-width:1100px;margin:0 auto}
+    h1{margin:0 0 12px;color:var(--fg)}
+    .meta{color:var(--muted);margin:0 0 16px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+    input,button{font-size:14px;padding:10px 12px;border-radius:8px;border:1px solid var(--border)}
+    button{background:#4f46e5;color:#fff;border-color:#4f46e5;cursor:pointer}
+    .table-wrap{overflow:auto;max-height:70vh;border:1px solid var(--border2);border-radius:8px}
+    table{border-collapse:collapse;width:100%;font-size:14px}
+    th,td{border-bottom:1px solid var(--border2);padding:10px 12px;text-align:left;vertical-align:top;white-space:nowrap}
+    th{position:sticky;top:0;background:var(--bg);z-index:1}
+    .ok{color:#059669}.bad{color:#dc2626}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Posts</h1>
+    <p class="meta">แสดงผลแบบตารางจาก Supabase Edge Function</p>
+
+    <div class="controls">
+      <input id="fnUrl" style="min-width:420px" />
+      <button id="loadBtn">โหลดข้อมูล</button>
+      <span id="status" class="meta"></span>
+    </div>
+
+    <div class="table-wrap" id="tableWrap" style="display:none">
+      <table id="tbl"><thead></thead><tbody></tbody></table>
+    </div>
+
+    <p class="meta" id="hint"></p>
+  </div>
+
+  <script>
+    const defaultUrl = 'https://fetyrgtzfeqcudmgbixi.supabase.co/functions/v1/hello';
+    const fnUrl = document.getElementById('fnUrl');
+    fnUrl.value = new URLSearchParams(location.search).get('url') || defaultUrl;
+
+    document.getElementById('loadBtn').addEventListener('click', load);
+    window.addEventListener('load', load);
+
+    async function load(){
+      const url = fnUrl.value.trim();
+      const status = document.getElementById('status');
+      const hint = document.getElementById('hint');
+      status.textContent = 'กำลังโหลด...';
+      hint.textContent = '';
+      try{
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        const data = await res.json();
+        const posts = data?.database?.posts || [];
+        status.innerHTML = `สถานะ: <span class="${res.ok?'ok':'bad'}">${res.status} ${res.statusText}</span> · ได้ ${posts.length} แถว`;
+        renderTable(posts);
+        hint.innerHTML = `ที่มา: <code>${url}</code>`;
+      }catch(err){
+        status.innerHTML = `ข้อผิดพลาด: <span class="bad">${err?.message || err}</span>`;
+        renderTable([]);
+      }
+    }
+
+    function renderTable(rows){
+      const wrap = document.getElementById('tableWrap');
+      const thead = document.querySelector('#tbl thead');
+      const tbody = document.querySelector('#tbl tbody');
+      tbody.innerHTML=''; thead.innerHTML='';
+      if(!rows.length){ wrap.style.display='none'; return; }
+      const cols = Object.keys(rows[0]);
+      thead.innerHTML = `<tr>${cols.map(c=>`<th>${escapeHtml(c)}</th>`).join('')}</tr>`;
+      tbody.innerHTML = rows.map(r=>`<tr>${cols.map(c=>`<td>${fmt(r[c])}</td>`).join('')}</tr>`).join('');
+      wrap.style.display='block';
+    }
+
+    function fmt(v){
+      if(v==null) return '';
+      if(typeof v === 'object') return `<pre>${escapeHtml(JSON.stringify(v,null,2))}</pre>`;
+      return escapeHtml(String(v));
+    }
+    function escapeHtml(s){
+      return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+    }
+  </script>
+</body>
+</html>
