@@ -9,7 +9,8 @@
 				"run",
 				"--allow-net",
 				"--allow-env",
-				"index.ts"
+				"--allow-read",
+				"${workspaceFolder}/supabase/functions/hello/index.ts"
 			],
 			"options": {
 				"cwd": "${workspaceFolder}/supabase/functions/hello"
@@ -24,6 +25,21 @@
 				"panel": "new",
 				"showReuseMessage": true,
 				"clear": false
+			}
+		},
+		{
+			"label": "Test Local Function",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"try { (Invoke-WebRequest -Uri 'http://localhost:8000' -UseBasicParsing).Content } catch { Write-Error $_ }"
+			],
+			"group": "test",
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
 			}
 		},
 		{

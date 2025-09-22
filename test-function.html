@@ -88,6 +88,37 @@
             overflow-x: auto;
             font-size: 13px;
         }
+        .table-wrap {
+            margin-top: 14px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: auto;
+            max-height: 320px;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        table.data-table th, table.data-table td {
+            border-bottom: 1px solid #edf2f7;
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+        table.data-table th {
+            background: #f7fafc;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        table.data-table td pre {
+            background: #f7fafc;
+            color: #2d3748;
+            margin: 0;
+        }
         .error { border-left-color: #f56565; background: #fed7d7; }
         .loading { 
             border-left-color: #ed8936; 
@@ -151,8 +182,8 @@
             <input type="text" id="functionUrl" value="https://fetyrgtzfeqcudmgbixi.supabase.co/functions/v1/hello">
         </div>
         <div class="input-group">
-            <label for="apiKey">API Key (optional for testing):</label>
-            <input type="password" id="apiKey" placeholder="eyJhbGciOiJIUzI1NiIs...">
+            <label for="apiKey">API Key (required for production):</label>
+            <input type="password" id="apiKey" placeholder="ใส่ anon public key จาก Supabase (Project Settings → API)">
         </div>
         <button onclick="testProduction()">☁️ Test Production Function</button>
         
@@ -215,16 +246,19 @@
                 return;
             }
             
+            if (!apiKey) {
+                alert('🔐 Production ต้องใช้ API Key (anon public key)\nไปที่ Supabase → Project Settings → API → คัดลอก anon public key');
+                return;
+            }
+            
             showLoading();
             try {
                 const headers = {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    // Both headers improve compatibility with Supabase edge gateway
+                    'Authorization': `Bearer ${apiKey}`,
+                    'apikey': apiKey
                 };
-                
-                // Add authorization header if API key provided
-                if (apiKey) {
-                    headers['Authorization'] = `Bearer ${apiKey}`;
-                }
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -238,10 +272,12 @@
                     data: data,
                     url: url,
                     type: 'Production',
-                    authenticated: !!apiKey
+                    authenticated: true,
+                    headersSent: { authorization: true, apikey: true }
                 });
             } catch (error) {
-                showError('Error: ' + error.message + '\n\nตรวจสอบ:\n1. URL ถูกต้องหรือไม่\n2. Function deploy แล้วหรือยัง\n3. Network connection\n4. API Key (ถ้าจำเป็น)');
+                const hint = `\n\nตรวจสอบ:\n1) URL ถูกต้องหรือไม่\n2) ใส่ anon public key แล้วหรือยัง (Project Settings -> API)\n3) ลองใหม่โดยเปิดหน้าเว็บนี้ในแท็บใหม่/โหมดไม่ระบุตัวตน\n4) ทดสอบด้วย PowerShell:\nInvoke-WebRequest -Uri '${url}' -Headers @{ Authorization = 'Bearer <ANON_KEY>'; apikey = '<ANON_KEY>' } | Select-Object -ExpandProperty Content`;
+                showError('Error: ' + (error?.message || error) + hint);
             }
         }
         
@@ -263,14 +299,42 @@
             
             const timestamp = new Date().toLocaleString('th-TH');
             
+            // Build optional table from database.posts
+            let tableHtml = '';
+            const posts = data?.data?.database?.posts;
+            if (Array.isArray(posts) && posts.length) {
+                const columns = Object.keys(posts[0]);
+                const header = columns.map(c => `<th>${c}</th>`).join('');
+                const rows = posts.map(row => {
+                    return `<tr>` + columns.map(c => {
+                        const val = row[c];
+                        const display = typeof val === 'object' ? `<pre>${JSON.stringify(val, null, 2)}</pre>` : String(val);
+                        return `<td>${display}</td>`;
+                    }).join('') + `</tr>`;
+                }).join('');
+                tableHtml = `
+                    <h4>ตารางข้อมูล (posts): ${posts.length} แถว</h4>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr>${header}</tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
             result.innerHTML = `
                 <h3>✅ Success! (${data.type})</h3>
                 <p><strong>เวลาทดสอบ:</strong> ${timestamp}</p>
                 <p><strong>URL:</strong> ${data.url}</p>
                 <p><strong>Status:</strong> ${data.status} ${data.statusText}</p>
                 <p><strong>Authentication:</strong> ${data.authenticated ? '🔐 With API Key' : '🔓 Public Access'}</p>
-                <p><strong>Response:</strong></p>
-                <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                ${data.headersSent ? `<p><strong>Headers sent:</strong> Authorization + apikey</p>` : ''}
+                ${tableHtml}
+                <details style="margin-top:12px;">
+                  <summary><strong>Raw JSON Response</strong></summary>
+                  <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                </details>
             `;
             
             // Re-enable buttons

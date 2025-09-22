@@ -25,13 +25,22 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? 'https://fetyrgtzfeqcudmgbixi.supabase.co'
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldHlyZ3R6ZmVxY3VkbWdiaXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NzkyOTcsImV4cCI6MjA3NDA1NTI5N30.Cvf69n4ZnGIzwtmcqC02seRW2dhg0l4yksXxiHHxKBA'
     
+    console.log('Supabase URL:', supabaseUrl);
+    console.log('Supabase Key present:', supabaseKey ? 'Yes' : 'No');
+    
     const supabase = createClient(supabaseUrl, supabaseKey)
+    
+    console.log('Attempting to fetch posts...');
 
     // Get posts from database
     const { data: posts, error } = await supabase
       .from('posts')
       .select('*')
       .order('created_at', { ascending: false })
+
+    console.log('Database query completed');
+    console.log('Posts:', posts);
+    console.log('Error:', error);
 
     if (error) {
       console.error('Database error:', error)
